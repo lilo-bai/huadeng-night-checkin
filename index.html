@@ -124,15 +124,16 @@
 
         .main-title {
             font-family: 'ZCOOL KuaiLe', cursive;
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-size: clamp(1.8rem, 5vw, 3.2rem);
             color: var(--primary-red);
-            text-shadow: 
+            text-shadow:
                 0 2px 4px var(--shadow-soft),
                 0 0 30px rgba(196, 92, 72, 0.2);
-            letter-spacing: 8px;
+            letter-spacing: 4px;
             margin: 10px 0;
             position: relative;
             display: inline-block;
+            white-space: nowrap;
         }
 
         .main-title::after {
@@ -277,10 +278,10 @@
         }
 
         .preview-image {
-            max-width: 150px;
-            max-height: 150px;
+            max-width: 100%;
+            max-height: 220px;
             border-radius: 12px;
-            object-fit: cover;
+            object-fit: contain;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
@@ -398,20 +399,35 @@
             background: linear-gradient(-90deg, rgba(253, 248, 240, 0.9), transparent);
         }
 
+        .marquee-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .marquee-wrapper:hover .marquee-track {
+            animation-play-state: paused;
+        }
+
         .marquee-track {
             display: flex;
             gap: 20px;
-            animation: marquee 30s linear infinite;
+            animation: marquee 15s linear infinite;
             width: max-content;
         }
 
-        .marquee-track:hover {
-            animation-play-state: paused;
+        .marquee-track.reverse {
+            animation: marquee-reverse 15s linear infinite;
         }
 
         @keyframes marquee {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
+        }
+
+        @keyframes marquee-reverse {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
         }
 
         /* ===== 跑马灯卡片（拍立得风格） ===== */
@@ -783,7 +799,7 @@
 
             <div class="input-group">
                 <label class="input-label" for="nameInput">你的名字</label>
-                <input type="text" id="nameInput" class="name-input" placeholder="请输入你的名字或昵称" maxlength="12">
+                <input type="text" id="nameInput" class="name-input" placeholder="君の、名前は？" maxlength="12">
             </div>
 
             <button class="submit-btn" id="submitBtn">
@@ -799,10 +815,12 @@
                 <span>🌸</span>
             </h2>
             <div class="marquee-container">
-                <div class="marquee-track" id="marqueeTrack">
-                    <div class="empty-state">
-                        <span class="empty-icon">🎋</span>
-                        <p>还没有人签到，快来成为第一个吧！</p>
+                <div class="marquee-wrapper" id="marqueeWrapper">
+                    <div class="marquee-track" id="marqueeTrack1">
+                        <div class="empty-state">
+                            <span class="empty-icon">🎋</span>
+                            <p>还没有人签到，快来成为第一个吧！</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -853,7 +871,8 @@
             const fileInput = document.getElementById('fileInput');
             const nameInput = document.getElementById('nameInput');
             const submitBtn = document.getElementById('submitBtn');
-            const marqueeTrack = document.getElementById('marqueeTrack');
+            const marqueeTrack1 = document.getElementById('marqueeTrack1');
+            const marqueeWrapper = document.getElementById('marqueeWrapper');
             const galleryGrid = document.getElementById('galleryGrid');
             const galleryEmpty = document.getElementById('galleryEmpty');
             const totalCount = document.getElementById('totalCount');
@@ -972,7 +991,7 @@
             // 打开弹窗
             function openModal(guest) {
                 const photo = guest.image
-                    ? `<img src="${guest.image}" alt="${guest.name}" class="modal-photo">`
+                    ? `<img src="${guest.image}" alt="" class="modal-photo">`
                     : `<div class="modal-photo default-modal">🎭</div>`;
 
                 const dateStr = new Date(guest.time).toLocaleString('zh-CN', {
@@ -1023,21 +1042,40 @@
                 totalCount.textContent = guests.length;
                 onlineCount.textContent = guests.length + Math.floor(Math.random() * 5) + 1;
 
-                // 渲染跑马灯
+                // 渲染跑马灯（两行）
                 if (guests.length === 0) {
-                    marqueeTrack.innerHTML = `
-                        <div class="empty-state">
-                            <span class="empty-icon">🎋</span>
-                            <p>还没有人签到，快来成为第一个吧！</p>
+                    marqueeWrapper.innerHTML = `
+                        <div class="marquee-track" id="marqueeTrack1">
+                            <div class="empty-state">
+                                <span class="empty-icon">🎋</span>
+                                <p>还没有人签到，快来成为第一个吧！</p>
+                            </div>
                         </div>
                     `;
                 } else {
+                    // 清空并重建两行
+                    marqueeWrapper.innerHTML = '';
+
                     // 复制一份数据实现无缝滚动
                     const allGuests = [...guests, ...guests];
-                    marqueeTrack.innerHTML = '';
+
+                    // 第一行：正常方向
+                    const track1 = document.createElement('div');
+                    track1.className = 'marquee-track';
                     allGuests.forEach(guest => {
-                        marqueeTrack.appendChild(createMarqueeCard(guest));
+                        track1.appendChild(createMarqueeCard(guest));
                     });
+                    marqueeWrapper.appendChild(track1);
+
+                    // 第二行：反向方向（从一半位置开始，制造错落感）
+                    const track2 = document.createElement('div');
+                    track2.className = 'marquee-track reverse';
+                    const halfIndex = Math.floor(guests.length / 2);
+                    const shiftedGuests = [...guests.slice(halfIndex), ...guests.slice(0, halfIndex), ...guests.slice(halfIndex), ...guests.slice(0, halfIndex)];
+                    shiftedGuests.forEach(guest => {
+                        track2.appendChild(createMarqueeCard(guest));
+                    });
+                    marqueeWrapper.appendChild(track2);
                 }
 
                 // 渲染网格
