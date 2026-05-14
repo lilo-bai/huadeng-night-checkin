@@ -844,10 +844,31 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
     <script>
         (function() {
-            // 数据存储
-            const STORAGE_KEY = 'huadeng_guests';
+            // ============================================================
+            // Firebase 配置 —— 第1步：请到这里填入你的 Firebase 配置
+            // https://console.firebase.google.com/ → 项目设置 → 添加应用 → Web
+            // ============================================================
+            const firebaseConfig = {
+                apiKey: "YOUR_API_KEY",
+                authDomain: "YOUR_PROJECT.firebaseapp.com",
+                databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+                projectId: "YOUR_PROJECT",
+                storageBucket: "YOUR_PROJECT.appspot.com",
+                messagingSenderId: "YOUR_SENDER_ID",
+                appId: "YOUR_APP_ID"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+            const checkinsRef = db.ref('checkins');
+
+            // 数据状态
             let currentImage = null;
             let guests = [];
 
@@ -863,23 +884,9 @@
             const onlineCount = document.getElementById('onlineCount');
             const toast = document.getElementById('toast');
 
-            // 加载数据
-            function loadGuests() {
-                try {
-                    const data = localStorage.getItem(STORAGE_KEY);
-                    if (data) {
-                        guests = JSON.parse(data);
-                    }
-                } catch (e) {
-                    guests = [];
-                }
-                renderAll();
-            }
-
-            // 保存数据
-            function saveGuests() {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(guests));
-            }
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalClose = document.getElementById('modalClose');
+            const modalBody = document.getElementById('modalBody');
 
             // 显示提示
             function showToast(message) {
@@ -919,12 +926,7 @@
                 });
             }
 
-            // DOM 元素 - 弹窗
-            const modalOverlay = document.getElementById('modalOverlay');
-            const modalClose = document.getElementById('modalClose');
-            const modalBody = document.getElementById('modalBody');
-
-            // 创建跑马灯卡片（拍立得风格，长方形图片，可点击）
+            // 创建跑马灯卡片（拍立得风格，可点击）
             function createMarqueeCard(guest) {
                 const div = document.createElement('div');
                 div.className = 'guest-card';
@@ -945,12 +947,11 @@
                     <div class="guest-time">${time}</div>
                 `;
 
-                // 点击打开弹窗
                 div.addEventListener('click', () => openModal(guest));
                 return div;
             }
 
-            // 创建网格卡片（圆形头像）
+            // 创建网格卡片
             function createGalleryCard(guest) {
                 const div = document.createElement('div');
                 div.className = 'gallery-card';
@@ -1037,12 +1038,8 @@
                         </div>
                     `;
                 } else {
-                    // 清空并重建单排
                     marqueeWrapper.innerHTML = '';
-
-                    // 复制一份数据实现无缝滚动
                     const allGuests = [...guests, ...guests];
-
                     const track = document.createElement('div');
                     track.className = 'marquee-track';
                     allGuests.forEach(guest => {
@@ -1059,7 +1056,6 @@
                 } else {
                     galleryEmpty.style.display = 'none';
                     galleryGrid.innerHTML = '';
-                    // 倒序显示，最新的在前
                     [...guests].reverse().forEach((guest, index) => {
                         const card = createGalleryCard(guest);
                         card.style.animationDelay = `${index * 0.05}s`;
@@ -1068,7 +1064,7 @@
                 }
             }
 
-            // 文件上传
+            // ===== 文件上传 =====
             uploadArea.addEventListener('click', () => fileInput.click());
 
             fileInput.addEventListener('change', async (e) => {
@@ -1094,7 +1090,6 @@
                 }
             });
 
-            // 拖拽上传
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 uploadArea.style.borderColor = 'var(--primary-red)';
@@ -1114,7 +1109,7 @@
                 }
             });
 
-            // 提交签到
+            // ===== 提交签到 —— 写入 Firebase =====
             submitBtn.addEventListener('click', () => {
                 const name = nameInput.value.trim();
                 
@@ -1130,15 +1125,18 @@
                 }
 
                 const guest = {
-                    id: Date.now(),
                     name: name,
                     image: currentImage,
                     time: Date.now()
                 };
 
-                guests.push(guest);
-                saveGuests();
-                renderAll();
+                // 推送到 Firebase 实时数据库
+                checkinsRef.push(guest).then(() => {
+                    showToast(`欢迎 ${name}！签到成功 ✨`);
+                }).catch((err) => {
+                    console.error(err);
+                    showToast('签到失败，请稍后重试');
+                });
 
                 // 重置表单
                 nameInput.value = '';
@@ -1150,20 +1148,27 @@
                     <p class="upload-text">点击上传你的照片</p>
                     <p class="upload-hint">支持 JPG、PNG 格式</p>
                 `;
-
-                showToast(`欢迎 ${name}！签到成功 ✨`);
             });
 
-            // 回车提交
             nameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    submitBtn.click();
-                }
+                if (e.key === 'Enter') submitBtn.click();
+            });
+
+            // ===== Firebase 实时监听 =====
+            checkinsRef.on('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                guests = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+                guests.sort((a, b) => a.time - b.time); // 按时间排序
+                renderAll();
+            }, (err) => {
+                console.error('Firebase 监听失败:', err);
+                showToast('数据同步失败');
             });
 
             // 模拟在线人数变化
             setInterval(() => {
-                onlineCount.textContent = guests.length + Math.floor(Math.random() * 5) + 1;
+                const base = guests.length || Math.floor(Math.random() * 3) + 1;
+                onlineCount.textContent = base + Math.floor(Math.random() * 5);
             }, 5000);
 
             // 添加装饰粒子
@@ -1183,8 +1188,12 @@
             }
 
             // 初始化
-            loadGuests();
             createParticles();
+
+            // 提示配置占位
+            if (firebaseConfig.apiKey === 'YOUR_API_KEY') {
+                showToast('⚙️ 请在代码中填入 Firebase 配置');
+            }
         })();
     </script>
 </body>
