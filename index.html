@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华灯之夜次元庆典 - 电子签到板</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-red: #C45C48;
+            --primary-gold: #D4A574;
+            --primary-gold-light: #F5E6C8;
+            --ink: #2C2C2C;
+            --bg-warm: #FDF8F0;
+            --bg-cream: #FFF9F0;
+            --accent-pink: #E8A0BF;
+            --accent-purple: #B8A9C9;
+            --accent-blue: #9BB8D3;
+            --shadow-soft: rgba(196, 92, 72, 0.15);
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--bg-warm);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--ink);
+        }
+
+        /* 背景装饰 */
+        .bg-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-decoration::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(212, 165, 116, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(196, 92, 72, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(184, 169, 201, 0.05) 0%, transparent 60%);
+        }
+
+        .lantern {
+            position: absolute;
+            font-size: 2.5rem;
+            opacity: 0.15;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .lantern:nth-child(1) { top: 5%; left: 8%; animation-delay: 0s; }
+        .lantern:nth-child(2) { top: 15%; right: 10%; animation-delay: 1s; }
+        .lantern:nth-child(3) { top: 60%; left: 5%; animation-delay: 2s; }
+        .lantern:nth-child(4) { top: 70%; right: 8%; animation-delay: 3s; }
+        .lantern:nth-child(5) { top: 35%; left: 15%; animation-delay: 1.5s; }
+        .lantern:nth-child(6) { top: 45%; right: 15%; animation-delay: 2.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
+        }
+
+        .cloud {
+            position: absolute;
+            opacity: 0.06;
+            font-size: 4rem;
+        }
+
+        .cloud:nth-child(7) { top: 20%; left: 30%; }
+        .cloud:nth-child(8) { top: 50%; right: 25%; }
+        .cloud:nth-child(9) { bottom: 20%; left: 40%; }
+
+        /* 主容器 */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 标题区域 */
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            position: relative;
+        }
+
+        .header-decoration {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .header-line {
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
+        }
+
+        .header-ornament {
+            font-size: 1.5rem;
+            color: var(--primary-gold);
+        }
+
+        .main-title {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            color: var(--primary-red);
+            text-shadow: 
+                0 2px 4px var(--shadow-soft),
+                0 0 30px rgba(196, 92, 72, 0.2);
+            letter-spacing: 8px;
+            margin: 10px 0;
+            position: relative;
+            display: inline-block;
+        }
+
+        .main-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
+            border-radius: 2px;
+        }
+
+        .sub-title {
+            font-size: 1.1rem;
+            color: var(--primary-gold);
+            letter-spacing: 6px;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+
+        /* 签到统计 */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px 25px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            border: 1px solid rgba(212, 165, 116, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 2rem;
+            color: var(--primary-red);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--ink);
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+
+        /* 签到区域 */
+        .checkin-section {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 24px;
+            padding: 35px;
+            margin: 0 auto 40px;
+            max-width: 600px;
+            box-shadow: 
+                0 8px 32px var(--shadow-soft),
+                0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid rgba(212, 165, 116, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .checkin-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-red), var(--primary-gold), var(--accent-pink), var(--primary-gold), var(--primary-red));
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .checkin-title {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 1.6rem;
+            color: var(--primary-red);
+            text-align: center;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--primary-gold);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(245, 230, 200, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-red);
+            background: rgba(196, 92, 72, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .upload-area.has-image {
+            border-style: solid;
+            border-color: var(--primary-gold);
+            background: rgba(245, 230, 200, 0.3);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .upload-text {
+            color: var(--ink);
+            opacity: 0.7;
+            font-size: 0.95rem;
+        }
+
+        .upload-hint {
+            font-size: 0.8rem;
+            color: var(--primary-gold);
+            margin-top: 8px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .preview-image {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            margin-top: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--ink);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid rgba(212, 165, 116, 0.3);
+            border-radius: 12px;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--ink);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .name-input:focus {
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 3px rgba(196, 92, 72, 0.1);
+        }
+
+        .name-input::placeholder {
+            color: rgba(44, 44, 44, 0.4);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, var(--primary-red), #D4786A);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(196, 92, 72, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(196, 92, 72, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 跑马灯区域 */
+        .marquee-section {
+            margin: 40px 0;
+        }
+
+        .section-title {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 1.5rem;
+            color: var(--primary-red);
+            text-align: center;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .marquee-container {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 20px var(--shadow-soft);
+            border: 1px solid rgba(212, 165, 116, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .marquee-container::before,
+        .marquee-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .marquee-container::before {
+            left: 0;
+            background: linear-gradient(90deg, rgba(253, 248, 240, 0.9), transparent);
+        }
+
+        .marquee-container::after {
+            right: 0;
+            background: linear-gradient(-90deg, rgba(253, 248, 240, 0.9), transparent);
+        }
+
+        .marquee-track {
+            display: flex;
+            gap: 20px;
+            animation: marquee 30s linear infinite;
+            width: max-content;
+        }
+
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .guest-card {
+            flex-shrink: 0;
+            width: 160px;
+            background: linear-gradient(135deg, #fff, var(--bg-cream));
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+            border: 1px solid rgba(212, 165, 116, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        .guest-card:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 8px 25px rgba(196, 92, 72, 0.15);
+            border-color: var(--primary-gold);
+        }
+
+        .guest-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 10px;
+            border: 3px solid var(--primary-gold);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .guest-avatar.default {
+            background: linear-gradient(135deg, var(--primary-gold-light), var(--accent-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+        }
+
+        .guest-name {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 1.1rem;
+            color: var(--ink);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .guest-time {
+            font-size: 0.75rem;
+            color: var(--primary-gold);
+            margin-top: 4px;
+            opacity: 0.8;
+        }
+
+        /* 网格展示区域 */
+        .gallery-section {
+            margin: 40px 0;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .gallery-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(212, 165, 116, 0.2);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gallery-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(196, 92, 72, 0.12);
+        }
+
+        .gallery-card .guest-avatar {
+            width: 90px;
+            height: 90px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--ink);
+            opacity: 0.5;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+        }
+
+        /* 提示消息 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, var(--primary-red), #D4786A);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 1rem;
+            box-shadow: 0 4px 20px rgba(196, 92, 72, 0.3);
+            z-index: 1000;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-family: 'ZCOOL KuaiLe', cursive;
+            letter-spacing: 1px;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--ink);
+            opacity: 0.5;
+            font-size: 0.85rem;
+        }
+
+        .footer-divider {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
+            margin: 0 auto 15px;
+        }
+
+        /* 装饰粒子 */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.3;
+            animation: particleFloat 8s ease-in-out infinite;
+        }
+
+        @keyframes particleFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(120deg); }
+            66% { transform: translateY(-10px) rotate(240deg); }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .main-title {
+                letter-spacing: 4px;
+            }
+            .checkin-section {
+                padding: 25px 20px;
+            }
+            .stats-bar {
+                gap: 20px;
+            }
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景装饰 -->
+    <div class="bg-decoration">
+        <div class="lantern">🏮</div>
+        <div class="lantern">🏮</div>
+        <div class="lantern">🏮</div>
+        <div class="lantern">🏮</div>
+        <div class="lantern">🏮</div>
+        <div class="lantern">🏮</div>
+        <div class="cloud">☁️</div>
+        <div class="cloud">☁️</div>
+        <div class="cloud">☁️</div>
+    </div>
+
+    <div class="container">
+        <!-- 标题 -->
+        <header class="header">
+            <div class="header-decoration">
+                <div class="header-line"></div>
+                <span class="header-ornament">✦</span>
+                <div class="header-line"></div>
+            </div>
+            <h1 class="main-title">华灯之夜次元庆典</h1>
+            <p class="sub-title">二次元晚会 · 电子签到板</p>
+        </header>
+
+        <!-- 统计 -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">已签到</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="onlineCount">0</div>
+                <div class="stat-label">在线人数</div>
+            </div>
+        </div>
+
+        <!-- 签到表单 -->
+        <section class="checkin-section">
+            <h2 class="checkin-title">
+                <span>🎐</span>
+                <span>留下你的印记</span>
+                <span>🎐</span>
+            </h2>
+            
+            <div class="upload-area" id="uploadArea">
+                <span class="upload-icon">📸</span>
+                <p class="upload-text">点击上传你的照片</p>
+                <p class="upload-hint">支持 JPG、PNG 格式</p>
+            </div>
+            <input type="file" id="fileInput" accept="image/*">
+
+            <div class="input-group">
+                <label class="input-label" for="nameInput">你的名字</label>
+                <input type="text" id="nameInput" class="name-input" placeholder="请输入你的名字或昵称" maxlength="12">
+            </div>
+
+            <button class="submit-btn" id="submitBtn">
+                ✨ 立即签到 ✨
+            </button>
+        </section>
+
+        <!-- 跑马灯 -->
+        <section class="marquee-section">
+            <h2 class="section-title">
+                <span>🌸</span>
+                <span>签到墙</span>
+                <span>🌸</span>
+            </h2>
+            <div class="marquee-container">
+                <div class="marquee-track" id="marqueeTrack">
+                    <div class="empty-state">
+                        <span class="empty-icon">🎋</span>
+                        <p>还没有人签到，快来成为第一个吧！</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 全员展示 -->
+        <section class="gallery-section">
+            <h2 class="section-title">
+                <span>🎆</span>
+                <span>全员集结</span>
+                <span>🎆</span>
+            </h2>
+            <div class="gallery-grid" id="galleryGrid">
+                <div class="empty-state" id="galleryEmpty">
+                    <span class="empty-icon">🎋</span>
+                    <p>还没有人签到，快来成为第一个吧！</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="footer-divider"></div>
+            <p>华灯之夜次元庆典 · 愿此夜星辰伴你同行 ✨</p>
+        </footer>
+    </div>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        (function() {
+            // 数据存储
+            const STORAGE_KEY = 'huadeng_guests';
+            let currentImage = null;
+            let guests = [];
+
+            // DOM 元素
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const nameInput = document.getElementById('nameInput');
+            const submitBtn = document.getElementById('submitBtn');
+            const marqueeTrack = document.getElementById('marqueeTrack');
+            const galleryGrid = document.getElementById('galleryGrid');
+            const galleryEmpty = document.getElementById('galleryEmpty');
+            const totalCount = document.getElementById('totalCount');
+            const onlineCount = document.getElementById('onlineCount');
+            const toast = document.getElementById('toast');
+
+            // 加载数据
+            function loadGuests() {
+                try {
+                    const data = localStorage.getItem(STORAGE_KEY);
+                    if (data) {
+                        guests = JSON.parse(data);
+                    }
+                } catch (e) {
+                    guests = [];
+                }
+                renderAll();
+            }
+
+            // 保存数据
+            function saveGuests() {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(guests));
+            }
+
+            // 显示提示
+            function showToast(message) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2500);
+            }
+
+            // 压缩图片
+            function compressImage(file, maxWidth = 400, maxHeight = 400) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > maxWidth || height > maxHeight) {
+                                const ratio = Math.min(maxWidth / width, maxHeight / height);
+                                width *= ratio;
+                                height *= ratio;
+                            }
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            resolve(canvas.toDataURL('image/jpeg', 0.8));
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // 创建访客卡片 HTML
+            function createGuestCard(guest, isMarquee = false) {
+                const div = document.createElement('div');
+                div.className = isMarquee ? 'guest-card' : 'gallery-card';
+                
+                const avatar = guest.image 
+                    ? `<img src="${guest.image}" alt="${guest.name}" class="guest-avatar">`
+                    : `<div class="guest-avatar default">🎭</div>`;
+
+                const time = new Date(guest.time).toLocaleTimeString('zh-CN', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+
+                div.innerHTML = `
+                    ${avatar}
+                    <div class="guest-name">${escapeHtml(guest.name)}</div>
+                    <div class="guest-time">${time}</div>
+                `;
+                return div;
+            }
+
+            // 转义 HTML
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // 渲染所有内容
+            function renderAll() {
+                // 更新统计
+                totalCount.textContent = guests.length;
+                onlineCount.textContent = guests.length + Math.floor(Math.random() * 5) + 1;
+
+                // 渲染跑马灯
+                if (guests.length === 0) {
+                    marqueeTrack.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-icon">🎋</span>
+                            <p>还没有人签到，快来成为第一个吧！</p>
+                        </div>
+                    `;
+                } else {
+                    // 复制一份数据实现无缝滚动
+                    const allGuests = [...guests, ...guests];
+                    marqueeTrack.innerHTML = '';
+                    allGuests.forEach(guest => {
+                        marqueeTrack.appendChild(createGuestCard(guest, true));
+                    });
+                }
+
+                // 渲染网格
+                if (guests.length === 0) {
+                    galleryGrid.innerHTML = '';
+                    galleryGrid.appendChild(galleryEmpty);
+                    galleryEmpty.style.display = 'block';
+                } else {
+                    galleryEmpty.style.display = 'none';
+                    galleryGrid.innerHTML = '';
+                    // 倒序显示，最新的在前
+                    [...guests].reverse().forEach((guest, index) => {
+                        const card = createGuestCard(guest, false);
+                        card.style.animationDelay = `${index * 0.05}s`;
+                        galleryGrid.appendChild(card);
+                    });
+                }
+            }
+
+            // 文件上传
+            uploadArea.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                if (!file.type.startsWith('image/')) {
+                    showToast('请上传图片文件');
+                    return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('图片大小不能超过 5MB');
+                    return;
+                }
+
+                try {
+                    currentImage = await compressImage(file);
+                    uploadArea.classList.add('has-image');
+                    uploadArea.innerHTML = `<img src="${currentImage}" class="preview-image" alt="预览">`;
+                } catch (err) {
+                    showToast('图片处理失败，请重试');
+                }
+            });
+
+            // 拖拽上传
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--primary-red)';
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = '';
+            });
+
+            uploadArea.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '';
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    fileInput.files = e.dataTransfer.files;
+                    fileInput.dispatchEvent(new Event('change'));
+                }
+            });
+
+            // 提交签到
+            submitBtn.addEventListener('click', () => {
+                const name = nameInput.value.trim();
+                
+                if (!name) {
+                    showToast('请输入你的名字');
+                    nameInput.focus();
+                    return;
+                }
+
+                if (name.length < 1 || name.length > 12) {
+                    showToast('名字长度需在 1-12 个字符之间');
+                    return;
+                }
+
+                const guest = {
+                    id: Date.now(),
+                    name: name,
+                    image: currentImage,
+                    time: Date.now()
+                };
+
+                guests.push(guest);
+                saveGuests();
+                renderAll();
+
+                // 重置表单
+                nameInput.value = '';
+                currentImage = null;
+                fileInput.value = '';
+                uploadArea.classList.remove('has-image');
+                uploadArea.innerHTML = `
+                    <span class="upload-icon">📸</span>
+                    <p class="upload-text">点击上传你的照片</p>
+                    <p class="upload-hint">支持 JPG、PNG 格式</p>
+                `;
+
+                showToast(`欢迎 ${name}！签到成功 ✨`);
+            });
+
+            // 回车提交
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    submitBtn.click();
+                }
+            });
+
+            // 模拟在线人数变化
+            setInterval(() => {
+                onlineCount.textContent = guests.length + Math.floor(Math.random() * 5) + 1;
+            }, 5000);
+
+            // 添加装饰粒子
+            function createParticles() {
+                const particles = ['✨', '⭐', '🌸', '💫', '🎋'];
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.top = Math.random() * 100 + '%';
+                    particle.style.fontSize = (Math.random() * 1 + 0.5) + 'rem';
+                    particle.style.animationDelay = Math.random() * 8 + 's';
+                    particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                    document.body.appendChild(particle);
+                }
+            }
+
+            // 初始化
+            loadGuests();
+            createParticles();
+        })();
+    </script>
+</body>
+</html>
