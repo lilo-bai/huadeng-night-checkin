@@ -855,13 +855,13 @@
             // https://console.firebase.google.com/ → 项目设置 → 添加应用 → Web
             // ============================================================
             const firebaseConfig = {
-                apiKey: "YOUR_API_KEY",
-                authDomain: "YOUR_PROJECT.firebaseapp.com",
-                databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-                projectId: "YOUR_PROJECT",
-                storageBucket: "YOUR_PROJECT.appspot.com",
-                messagingSenderId: "YOUR_SENDER_ID",
-                appId: "YOUR_APP_ID"
+                apiKey: "AIzaSyBypen_c0HjyGrrrAlkBsPGudzDaRSt3Ig",
+                authDomain: "huadeng-checkin.firebaseapp.com",
+                databaseURL: "https://huadeng-checkin-default-rtdb.firebaseio.com",
+                projectId: "huadeng-checkin",
+                storageBucket: "huadeng-checkin.firebasestorage.app",
+                messagingSenderId: "207572796776",
+                appId: "1:207572796776:web:68104e65de3293253742dd"
             };
 
             firebase.initializeApp(firebaseConfig);
@@ -1189,11 +1189,6 @@
 
             // 初始化
             createParticles();
-
-            // 提示配置占位
-            if (firebaseConfig.apiKey === 'YOUR_API_KEY') {
-                showToast('⚙️ 请在代码中填入 Firebase 配置');
-            }
         })();
     </script>
 </body>
