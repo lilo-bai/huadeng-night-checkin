@@ -414,24 +414,69 @@
             100% { transform: translateX(-50%); }
         }
 
+        /* ===== 跑马灯卡片（拍立得风格） ===== */
         .guest-card {
             flex-shrink: 0;
             width: 160px;
-            background: linear-gradient(135deg, #fff, var(--bg-cream));
-            border-radius: 16px;
-            padding: 15px;
+            background: linear-gradient(180deg, #fff 60%, var(--bg-cream));
+            border-radius: 14px;
+            padding: 10px 10px 14px;
             text-align: center;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-            border: 1px solid rgba(212, 165, 116, 0.25);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            border: 1px solid rgba(212, 165, 116, 0.3);
             transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
 
         .guest-card:hover {
-            transform: translateY(-5px) scale(1.03);
-            box-shadow: 0 8px 25px rgba(196, 92, 72, 0.15);
+            transform: translateY(-6px) rotate(-1deg);
+            box-shadow: 0 12px 30px rgba(196, 92, 72, 0.18);
             border-color: var(--primary-gold);
         }
 
+        .guest-card:active {
+            transform: translateY(-3px) rotate(0deg);
+        }
+
+        /* 跑马灯中的长方形图片 */
+        .guest-card .guest-photo {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            object-fit: cover;
+            border-radius: 10px;
+            display: block;
+            margin-bottom: 10px;
+            border: 2px solid rgba(212, 165, 116, 0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .guest-card .guest-photo.default {
+            background: linear-gradient(135deg, var(--primary-gold-light), var(--accent-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+        }
+
+        .guest-card .guest-name {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 1rem;
+            color: var(--ink);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .guest-card .guest-time {
+            font-size: 0.7rem;
+            color: var(--primary-gold);
+            margin-top: 3px;
+            opacity: 0.7;
+        }
+
+        /* 网格区仍然用圆形头像 */
         .guest-avatar {
             width: 100px;
             height: 100px;
@@ -450,20 +495,103 @@
             font-size: 2.5rem;
         }
 
-        .guest-name {
-            font-family: 'ZCOOL KuaiLe', cursive;
-            font-size: 1.1rem;
-            color: var(--ink);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        /* ===== 详情弹窗 ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 44, 44, 0.65);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.35s ease;
         }
 
-        .guest-time {
-            font-size: 0.75rem;
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: linear-gradient(180deg, #fff, var(--bg-cream));
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            border: 1px solid rgba(212, 165, 116, 0.3);
+            transform: translateY(30px) scale(0.95);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
             color: var(--primary-gold);
-            margin-top: 4px;
-            opacity: 0.8;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--primary-red);
+        }
+
+        .modal-photo {
+            width: 100%;
+            max-height: 380px;
+            object-fit: contain;
+            border-radius: 16px;
+            margin-bottom: 18px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .modal-photo.default-modal {
+            width: 200px;
+            height: 260px;
+            margin: 0 auto 18px;
+            background: linear-gradient(135deg, var(--primary-gold-light), var(--accent-pink));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .modal-name {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 1.6rem;
+            color: var(--primary-red);
+            margin-bottom: 8px;
+        }
+
+        .modal-time {
+            font-size: 0.95rem;
+            color: var(--primary-gold);
+            opacity: 0.85;
+        }
+
+        .modal-divider {
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
+            margin: 12px auto;
         }
 
         /* 网格展示区域 */
@@ -705,6 +833,14 @@
     <!-- 提示消息 -->
     <div class="toast" id="toast"></div>
 
+    <!-- 详情弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
     <script>
         (function() {
             // 数据存储
@@ -780,18 +916,49 @@
                 });
             }
 
-            // 创建访客卡片 HTML
-            function createGuestCard(guest, isMarquee = false) {
+            // DOM 元素 - 弹窗
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalClose = document.getElementById('modalClose');
+            const modalBody = document.getElementById('modalBody');
+
+            // 创建跑马灯卡片（拍立得风格，长方形图片，可点击）
+            function createMarqueeCard(guest) {
                 const div = document.createElement('div');
-                div.className = isMarquee ? 'guest-card' : 'gallery-card';
-                
-                const avatar = guest.image 
+                div.className = 'guest-card';
+                div.dataset.guestId = guest.id;
+
+                const photo = guest.image
+                    ? `<img src="${guest.image}" alt="${guest.name}" class="guest-photo">`
+                    : `<div class="guest-photo default">🎭</div>`;
+
+                const time = new Date(guest.time).toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                div.innerHTML = `
+                    ${photo}
+                    <div class="guest-name">${escapeHtml(guest.name)}</div>
+                    <div class="guest-time">${time}</div>
+                `;
+
+                // 点击打开弹窗
+                div.addEventListener('click', () => openModal(guest));
+                return div;
+            }
+
+            // 创建网格卡片（圆形头像）
+            function createGalleryCard(guest) {
+                const div = document.createElement('div');
+                div.className = 'gallery-card';
+
+                const avatar = guest.image
                     ? `<img src="${guest.image}" alt="${guest.name}" class="guest-avatar">`
                     : `<div class="guest-avatar default">🎭</div>`;
 
-                const time = new Date(guest.time).toLocaleTimeString('zh-CN', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                const time = new Date(guest.time).toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit'
                 });
 
                 div.innerHTML = `
@@ -801,6 +968,47 @@
                 `;
                 return div;
             }
+
+            // 打开弹窗
+            function openModal(guest) {
+                const photo = guest.image
+                    ? `<img src="${guest.image}" alt="${guest.name}" class="modal-photo">`
+                    : `<div class="modal-photo default-modal">🎭</div>`;
+
+                const dateStr = new Date(guest.time).toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+
+                modalBody.innerHTML = `
+                    ${photo}
+                    <div class="modal-name">${escapeHtml(guest.name)}</div>
+                    <div class="modal-divider"></div>
+                    <div class="modal-time">签到时间：${dateStr}</div>
+                `;
+
+                modalOverlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            // 关闭弹窗
+            function closeModal() {
+                modalOverlay.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+
+            // 弹窗事件绑定
+            modalClose.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) closeModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
 
             // 转义 HTML
             function escapeHtml(text) {
@@ -828,7 +1036,7 @@
                     const allGuests = [...guests, ...guests];
                     marqueeTrack.innerHTML = '';
                     allGuests.forEach(guest => {
-                        marqueeTrack.appendChild(createGuestCard(guest, true));
+                        marqueeTrack.appendChild(createMarqueeCard(guest));
                     });
                 }
 
@@ -842,7 +1050,7 @@
                     galleryGrid.innerHTML = '';
                     // 倒序显示，最新的在前
                     [...guests].reverse().forEach((guest, index) => {
-                        const card = createGuestCard(guest, false);
+                        const card = createGalleryCard(guest);
                         card.style.animationDelay = `${index * 0.05}s`;
                         galleryGrid.appendChild(card);
                     });
