@@ -399,25 +399,15 @@
             background: linear-gradient(-90deg, rgba(253, 248, 240, 0.9), transparent);
         }
 
-        .marquee-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .marquee-wrapper:hover .marquee-track {
-            animation-play-state: paused;
-        }
-
         .marquee-track {
             display: flex;
-            gap: 14px;
-            animation: marquee 5s linear infinite;
+            gap: 16px;
+            animation: marquee 20s linear infinite;
             width: max-content;
         }
 
-        .marquee-track.reverse {
-            animation: marquee-reverse 5s linear infinite;
+        .marquee-track:hover {
+            animation-play-state: paused;
         }
 
         @keyframes marquee {
@@ -425,15 +415,10 @@
             100% { transform: translateX(-50%); }
         }
 
-        @keyframes marquee-reverse {
-            0% { transform: translateX(-50%); }
-            100% { transform: translateX(0); }
-        }
-
-        /* ===== 跑马灯卡片（拍立得风格） ===== */
+        /* ===== 跑马灯卡片（横版拍立得风格） ===== */
         .guest-card {
             flex-shrink: 0;
-            width: 120px;
+            width: 190px;
             background: linear-gradient(180deg, #fff 60%, var(--bg-cream));
             border-radius: 12px;
             padding: 8px 8px 10px;
@@ -456,10 +441,10 @@
             transform: translateY(-2px) rotate(0deg);
         }
 
-        /* 跑马灯中的竖版图片 9:16 */
+        /* 跑马灯中的横版图片 16:9 */
         .guest-card .guest-photo {
             width: 100%;
-            aspect-ratio: 9 / 16;
+            aspect-ratio: 16 / 9;
             object-fit: cover;
             border-radius: 8px;
             display: block;
@@ -478,7 +463,7 @@
 
         .guest-card .guest-name {
             font-family: 'ZCOOL KuaiLe', cursive;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--ink);
             white-space: nowrap;
             overflow: hidden;
@@ -486,17 +471,17 @@
         }
 
         .guest-card .guest-time {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: var(--primary-gold);
             margin-top: 2px;
             opacity: 0.7;
         }
 
-        /* 网格区竖版头像 9:16 */
+        /* 网格区横版头像 16:9 */
         .guest-avatar {
             width: 100%;
-            max-width: 110px;
-            aspect-ratio: 9 / 16;
+            max-width: 130px;
+            aspect-ratio: 16 / 9;
             border-radius: 10px;
             object-fit: cover;
             margin: 0 auto 10px;
@@ -509,7 +494,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.2rem;
+            font-size: 2rem;
         }
 
         /* ===== 详情弹窗 ===== */
@@ -580,8 +565,8 @@
         }
 
         .modal-photo.default-modal {
-            width: 200px;
-            height: 355px;
+            width: 280px;
+            height: 157px;
             margin: 0 auto 18px;
             background: linear-gradient(135deg, var(--primary-gold-light), var(--accent-pink));
             border-radius: 16px;
@@ -652,7 +637,7 @@
         }
 
         .gallery-card .guest-avatar {
-            max-width: 100px;
+            max-width: 130px;
         }
 
         /* 空状态 */
@@ -871,7 +856,6 @@
             const fileInput = document.getElementById('fileInput');
             const nameInput = document.getElementById('nameInput');
             const submitBtn = document.getElementById('submitBtn');
-            const marqueeTrack1 = document.getElementById('marqueeTrack1');
             const marqueeWrapper = document.getElementById('marqueeWrapper');
             const galleryGrid = document.getElementById('galleryGrid');
             const galleryEmpty = document.getElementById('galleryEmpty');
@@ -1042,10 +1026,10 @@
                 totalCount.textContent = guests.length;
                 onlineCount.textContent = guests.length + Math.floor(Math.random() * 5) + 1;
 
-                // 渲染跑马灯（两行）
+                // 渲染跑马灯（单排）
                 if (guests.length === 0) {
                     marqueeWrapper.innerHTML = `
-                        <div class="marquee-track" id="marqueeTrack1">
+                        <div class="marquee-track">
                             <div class="empty-state">
                                 <span class="empty-icon">🎋</span>
                                 <p>还没有人签到，快来成为第一个吧！</p>
@@ -1053,29 +1037,18 @@
                         </div>
                     `;
                 } else {
-                    // 清空并重建两行
+                    // 清空并重建单排
                     marqueeWrapper.innerHTML = '';
 
                     // 复制一份数据实现无缝滚动
                     const allGuests = [...guests, ...guests];
 
-                    // 第一行：正常方向
-                    const track1 = document.createElement('div');
-                    track1.className = 'marquee-track';
+                    const track = document.createElement('div');
+                    track.className = 'marquee-track';
                     allGuests.forEach(guest => {
-                        track1.appendChild(createMarqueeCard(guest));
+                        track.appendChild(createMarqueeCard(guest));
                     });
-                    marqueeWrapper.appendChild(track1);
-
-                    // 第二行：反向方向（从一半位置开始，制造错落感）
-                    const track2 = document.createElement('div');
-                    track2.className = 'marquee-track reverse';
-                    const halfIndex = Math.floor(guests.length / 2);
-                    const shiftedGuests = [...guests.slice(halfIndex), ...guests.slice(0, halfIndex), ...guests.slice(halfIndex), ...guests.slice(0, halfIndex)];
-                    shiftedGuests.forEach(guest => {
-                        track2.appendChild(createMarqueeCard(guest));
-                    });
-                    marqueeWrapper.appendChild(track2);
+                    marqueeWrapper.appendChild(track);
                 }
 
                 // 渲染网格
